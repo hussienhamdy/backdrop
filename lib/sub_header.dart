@@ -102,7 +102,7 @@ class BackdropSubHeader extends StatelessWidget {
             ],
           ),
         ),
-        divider ?? const Divider(height: 4.0, indent: 16.0, endIndent: 16.0),
+        // divider ?? const Divider(height: 4.0, indent: 16.0, endIndent: 16.0),
       ],
     );
   }

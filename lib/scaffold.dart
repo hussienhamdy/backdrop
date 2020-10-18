@@ -166,9 +166,6 @@ class BackdropScaffold extends StatefulWidget {
 
   // ------------- PROPERTIES TAKEN OVER FROM SCAFFOLD ------------- //
   
-   /// A key to use when building the [Scaffold].
-  final GlobalKey<ScaffoldState> scaffoldKey;
-
   /// See [Scaffold.appBar].
   final PreferredSizeWidget appBar;
 
@@ -240,6 +237,8 @@ class BackdropScaffold extends StatefulWidget {
   /// Defaults to `true`.
   final bool endDrawerEnableOpenDragGesture;
 
+  final double openedWidgetMargin;
+
   /// Creates a backdrop scaffold to be used as a material widget.
   BackdropScaffold({
     Key key,
@@ -270,7 +269,6 @@ class BackdropScaffold extends StatefulWidget {
     this.inactiveOverlayOpacity = 0.7,
     this.onBackLayerConcealed,
     this.onBackLayerRevealed,
-    this.scaffoldKey,
     this.appBar,
     this.floatingActionButton,
     this.floatingActionButtonLocation,
@@ -290,6 +288,7 @@ class BackdropScaffold extends StatefulWidget {
     this.drawerEdgeDragWidth,
     this.drawerEnableOpenDragGesture = true,
     this.endDrawerEnableOpenDragGesture = true,
+    this.openedWidgetMargin = 0,
   })  : assert(inactiveOverlayOpacity >= 0.0 && inactiveOverlayOpacity <= 1.0),
         super(key: key);
 
@@ -312,7 +311,7 @@ class BackdropScaffoldState extends State<BackdropScaffold>
 
   /// Key for accessing the [ScaffoldState] of [BackdropScaffold]'s internally
   /// used [Scaffold].
-  GlobalKey<ScaffoldState> scaffoldKey;
+  final scaffoldKey = GlobalKey<ScaffoldState>();
   double _backPanelHeight = 0;
   double _subHeaderHeight = 0;
 
@@ -328,9 +327,6 @@ class BackdropScaffoldState extends State<BackdropScaffold>
   @override
   void initState() {
     super.initState();
-    // initialize scaffoldKey
-    scaffoldKey = widget.scaffoldKey ?? GlobalKey<ScaffoldState>();
-    // initialize _controller
     _controller = widget.controller ??
         AnimationController(
             vsync: this, duration: Duration(milliseconds: 200), value: 1.0);
@@ -448,8 +444,9 @@ class BackdropScaffoldState extends State<BackdropScaffold>
       frontPanelHeight = -backPanelHeight;
     }
     return RelativeRectTween(
-      begin: RelativeRect.fromLTRB(0.0, backPanelHeight, 0.0, frontPanelHeight),
-      end: RelativeRect.fromLTRB(0.0, 0.0, 0.0, 0.0),
+      begin:RelativeRect.fromLTRB(0.0, widget.openedWidgetMargin, 0.0, 0),
+      end: RelativeRect.fromLTRB(0.0, backPanelHeight, 0.0, frontPanelHeight),
+      // end: RelativeRect.fromLTRB(0.0, widget.openedWidgetMargin, 0.0, 0),
     ).animate(CurvedAnimation(
       parent: controller,
       curve: widget.animationCurve,
@@ -529,7 +526,7 @@ class BackdropScaffoldState extends State<BackdropScaffold>
                 Flexible(child: widget.frontLayer),
               ],
             ),
-            _buildInactiveLayer(context),
+            // _buildInactiveLayer(context),
           ],
         ),
       ),
@@ -549,17 +546,7 @@ class BackdropScaffoldState extends State<BackdropScaffold>
       onWillPop: () => _willPopCallback(context),
       child: Scaffold(
         key: scaffoldKey,
-        appBar: widget.appBar ??
-            AppBar(
-              title: widget.title,
-              actions: widget.iconPosition == BackdropIconPosition.action
-                  ? <Widget>[BackdropToggleButton()] + widget.actions
-                  : widget.actions,
-              elevation: 0.0,
-              leading: widget.iconPosition == BackdropIconPosition.leading
-                  ? BackdropToggleButton()
-                  : null,
-            ),
+        appBar: widget.appBar == null ? null : widget.appBar,
         body: LayoutBuilder(
           builder: (context, constraints) {
             return Container(
